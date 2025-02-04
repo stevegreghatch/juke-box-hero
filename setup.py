@@ -14,7 +14,7 @@ setup(
     ],
     author='Steven Hatch',
     author_email='stevegreghatch@gmail.com',
-    description='',
-    long_description='',
+    description='Backend service for Juke Box Hero',
+    long_description='Backend service for Juke Box Hero',
     scripts=["app.py"]
 )
