@@ -1,0 +1,7 @@
+pymongo~=4.11
+librosa~=0.10.2
+setuptools~=75.8.0
+fastapi~=0.115.8
+uvicorn~=0.34.0
+pydantic~=2.10.6
+requests~=2.32.3
