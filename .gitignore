@@ -39,7 +39,7 @@ pip-delete-this-directory.txt
 # Ignore all XML files
 *.xml
 
-# Unit test / coverage reports
+# Unit service / coverage reports
 htmlcov/
 .tox/
 .nox/
