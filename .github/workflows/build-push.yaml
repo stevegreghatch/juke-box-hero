@@ -1,4 +1,7 @@
 name: build-push
+permissions:
+  contents: write
+  pull-requests: write
 
 on:
   push:
