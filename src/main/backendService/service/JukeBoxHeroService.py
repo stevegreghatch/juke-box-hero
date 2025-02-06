@@ -5,6 +5,7 @@ import librosa
 from librosa.feature import chroma_cqt
 import numpy as np
 import time
+from werkzeug.utils import secure_filename
 
 logging.basicConfig(
     level=logging.INFO,
@@ -12,6 +13,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+SAFE_DIRECTORY = '/safe/directory'
 
 def process_job(url):
     downloaded_file = download_track(url)
@@ -21,10 +23,13 @@ def process_job(url):
 
 def download_track(url):
     response = requests.get(url)
-    filename = os.path.basename(url)
-    with open(filename, 'wb') as file:
+    filename = secure_filename(os.path.basename(url))
+    fullpath = os.path.normpath(os.path.join(SAFE_DIRECTORY, filename))
+    if not fullpath.startswith(SAFE_DIRECTORY):
+        raise Exception("Invalid file path")
+    with open(fullpath, 'wb') as file:
         file.write(response.content)
-    return filename
+    return fullpath
 
 
 def get_metadata(filename):
