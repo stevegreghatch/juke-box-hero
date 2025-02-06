@@ -2,7 +2,6 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from main.backendService.service.JukeBoxHeroService import process_job
-from main.backendService.utility.Sanitize import sanitize_url
 
 logging.basicConfig(
     level=logging.INFO,
@@ -13,11 +12,11 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 
-@app.get('/download_mp3')
-async def download_mp3(url: str):
+@app.get('/process_audio')
+async def process_audio(artist: str, track_name: str):
     logger.info('received request to process job')
-    url = sanitize_url(url)
-    downloaded_file, tempo, key = process_job(url)
+    downloaded_file, tempo, key = process_job(artist, track_name)
+    logger.info(f'job processed successfully -- downloaded_file: {downloaded_file}, tempo: {tempo}, key: {key}')
     return {'downloaded_file': downloaded_file, 'tempo': tempo, 'key': key}
 
 def main():
