@@ -1,6 +1,8 @@
 import logging
 import uvicorn
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+
 from main.backendService.service.JukeBoxHeroService import process_job
 
 logging.basicConfig(
@@ -11,13 +13,22 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 @app.get('/process_audio')
 async def process_audio(artist: str, track_name: str):
     logger.info('received request to process job')
-    downloaded_file, tempo, key = process_job(artist, track_name)
-    logger.info(f'job processed successfully -- downloaded_file: {downloaded_file}, tempo: {tempo}, key: {key}')
-    return {'downloaded_file': downloaded_file, 'tempo': tempo, 'key': key}
+    file_path, pre_signed_url, bpm, key = process_job(artist, track_name)
+    logger.info('job processed successfully')
+    return {'file_path': file_path,'pre_signed_url': pre_signed_url,
+            'bpm': bpm, 'key': key}
 
 def main():
     logger.info('Starting FastAPI application')

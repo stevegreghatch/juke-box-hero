@@ -19,12 +19,9 @@ logger = logging.getLogger(__name__)
 
 def process_job(artist, track_name):
     search_query = f'{artist} {track_name}'
-    downloaded_file = get_audio(search_query)
-    if not downloaded_file:
-        logger.info("Download URL not found.")
-        return None
-    tempo, key = get_metadata(downloaded_file)
-    return downloaded_file, tempo, key
+    file_path, pre_signed_url = get_audio(search_query)
+    bpm, key = get_metadata(file_path)
+    return file_path, pre_signed_url, bpm, key
 
 def get_audio(search_query):
     search_results = ia.search_items(f'title:({search_query}) AND mediatype:(audio)')
@@ -37,24 +34,29 @@ def get_audio(search_query):
                 download_dir = 'downloads'
                 os.makedirs(download_dir, exist_ok=True)
                 item.download(files=[filename], destdir=download_dir)
-                parent_dir = os.path.join(download_dir, result['identifier'])
-                full_path = os.path.join(parent_dir, filename)
-                s3_key = f'{os.getenv('S3_PREFIX')}{filename}'
-                boto3.client('s3').upload_file(full_path, os.getenv('S3_BUCKET_NAME'), s3_key)
+                file_path = os.path.join(download_dir, result['identifier'], filename)
+                s3_key = f"{os.getenv('S3_PREFIX')}{filename}"
+                s3_client = boto3.client('s3')
+                s3_client.upload_file(file_path, os.getenv('S3_BUCKET_NAME'), s3_key)
                 logger.info(f'File uploaded to S3: {s3_key}')
-                return full_path
-    return None
+                pre_signed_url = s3_client.generate_presigned_url(
+                    'get_object',
+                    Params={'Bucket': os.getenv('S3_BUCKET_NAME'), 'Key': s3_key},
+                    ExpiresIn=3600
+                )
+                return file_path, pre_signed_url
+    return None, None
 
 def get_metadata(file_path):
     logger.info('Processing audio data')
     start_time = time.time()
     try:
         y, sr = librosa.load(file_path, sr=None)
-        tempo = int(librosa.beat.beat_track(y=y, sr=sr)[0])
+        bpm = int(librosa.beat.beat_track(y=y, sr=sr)[0])
         key = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'][np.argmax(np.sum(chroma_cqt(y=y, sr=sr), axis=1))]
         os.remove(file_path)
         logger.info(f'Audio data processed successfully in {time.time() - start_time:.2f} seconds')
-        return tempo, key
+        return bpm, key
     except Exception as e:
         logger.error(f'Error processing audio data: {e}')
         raise
