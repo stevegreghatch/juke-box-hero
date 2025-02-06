@@ -2,6 +2,7 @@ import logging
 import uvicorn
 from fastapi import FastAPI
 from main.backendService.service.JukeBoxHeroService import process_job
+from main.backendService.utility.Sanitize import sanitize_url
 
 logging.basicConfig(
     level=logging.INFO,
@@ -14,11 +15,8 @@ app = FastAPI()
 
 @app.get('/download_mp3')
 async def download_mp3(url: str):
-    from urllib.parse import urlparse
-    parsed_url = urlparse(url)
-    if not parsed_url.scheme or not parsed_url.netloc:
-        return {'error': 'Invalid URL'}
     logger.info('received request to process job')
+    url = sanitize_url(url)
     downloaded_file, tempo, key = process_job(url)
     return {'downloaded_file': downloaded_file, 'tempo': tempo, 'key': key}
 
