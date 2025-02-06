@@ -6,7 +6,7 @@ setup(
     version=getenv('VERSION', '0.0.1'),
     packages=find_packages(where='src', exclude=['tests']),
     package_dir={'': 'src'},
-    python_requires='>=3.13, <4',
+    python_requires='>=3.12, <4',
     include_package_data=True,
     install_requires=[
         'pydantic~=2.10.6',
