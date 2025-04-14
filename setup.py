@@ -9,7 +9,7 @@ setup(
     python_requires='>=3.12, <4',
     include_package_data=True,
     install_requires=[
-        'pydantic~=2.10.6',
+        'pydantic>=2.10.6,<2.12.0',
         'fastapi~=0.115.8',
     ],
     author='Steven Hatch',
